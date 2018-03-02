@@ -183,6 +183,30 @@ export default {
     })
   },
 
+  fetchUserData ({commit, getters}) {
+    commit('setLoading', true)
+    firebase.database().ref('/users/' + getters.user.id + '/registrations/')
+      .once('value')
+      .then(data => {
+        const dataParis = data.val()
+        let registeredMeetups = []
+        let swappedParis = []
+        for (let key in dataParis) {
+          registeredMeetups.push(dataParis[key])
+          swappedParis[dataParis[key]] = key
+        }
+
+        const updatedUser = {
+          id: getters.user.id,
+          registeredMeetups: registeredMeetups,
+          fbKeys: swappedParis
+        }
+
+        commit('setLoading', false)
+        commit('setUser', updatedUser)
+      })
+  },
+
   logout ({commit}) {
     firebase.auth().signOut()
     commit('setUser', null)
